@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>大批量数据入库系统登陆</title>
+<meta name="author" content="DeathGhost" />
+<link rel="stylesheet" type="text/css" href="../static/css/login.css" tppabs="css/style.css" />
+<style>
+body{height:100%;background:#1660a0;overflow:hidden;}
+canvas{z-index:-1;position:absolute;}
+</style>
+<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+<link href="../static/css/xcConfirm.css"rel="stylesheet">
+<script src="../static/js/xcConfirm.js"></script>
+<script src="../static/js/Particleground.js" tppabs="../static/js/Particleground.js"></script>
+<script>
+$(document).ready(function() {
+  //粒子背景特效
+  $('body').particleground({
+    dotColor: '#5cbdaa',
+    lineColor: '#5cbdaa'
+  });
+});
+</script>
+</head>
+<body>
+<dl class="admin_login">
+ <dt>
+  <strong id = "titles">大批量数据入库系统登陆</strong>
+  <em>Management Login</em>
+ </dt>
+    <form id="form1" action="/login_match" method="POST" >
+ <dd class="user_icon">
+  <input type="text" placeholder="账号" name="username" class="login_txtbx"/>
+ </dd>
+ <dd class="pwd_icon">
+  <input type="password" placeholder="密码" name="password" class="login_txtbx"/>
+ </dd>
+ <dd>
+  <input type="button" value="登陆" id = "sub1" class="submit_btn"/>
+ </dd>
+ <dd>
+  <input type="button" value="注册" id = "reg1" class="submit_register"/>
+ </dd>
+    </form>
+    <form id="form2" action="/register" method="POST" style="display: none">
+ <dd class="user_icon">
+  <input type="text" placeholder="请输入注册账号" id="r_user" name="username" class="login_txtbx"/>
+ </dd>
+ <dd class="pwd_icon">
+  <input type="password" placeholder="请输入注册密码" id = 'pas' name="password" class="login_txtbx"/>
+ </dd>
+<dd class="pwd_icon">
+  <input type="password" placeholder="请确认密码" id = 'r_pas' class="login_txtbx"/>
+ </dd>
+ <dd>
+  <input type="button" value="注册" id = "sub2" class="submit_btn"/>
+ </dd>
+ <dd>
+  <input type="button" value="返回登录" id = "reg2" class="submit_register"/>
+ </dd>
+    </form>
+ <dd>
+ </dd>
+</dl>
+<div id='htm'style="display:none">{{ htm }}</div>
+<script>
+    var htm1 = $('#htm').text();
+    var reg = /^\w+$/;
+   $('#sub1').click(function(){
+          if (!reg.test($('.login_txtbx').val())){
+              //alert('输入有误，请输入数字字母或下划线');return;
+              var txt=  "输入有误，请输入数字字母或下划线";
+              window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
+              return;
+          };
+          $('#form1').submit();
+   });
+   if(htm1=='err'){
+       var txt=  "用户名或密码错误或已登录！";
+       window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
+   };
+   $('#reg1').click(function(){
+      $('#form2').show();
+      $('#form1').hide();
+      $('#titles').html('用户注册');
+   });
+   $('#reg2').click(function(){
+      $('#form2').hide();
+      $('#form1').show();
+      $('#titles').html('大批量数据入库系统登陆');
+   });
+   $('#sub2').click(function(){
+       if (!reg.test($('#r_user').val())){
+              var txt=  "输入有误，请输入数字字母或下划线";
+              window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
+              return;
+          };
+       var pas = $('#pas').val();
+       var r_pas = $('#r_pas').val();
+       console.log(pas,r_pas);
+       if(pas!==r_pas){
+            var txt=  "密码输入不一致，请重新输入。";
+            window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
+            return;
+       };
+       $('#form2').submit();
+   });
+    if(htm1=='1'){
+        $('#form2').hide();
+        $('#form1').show();
+        $('#titles').html('大批量数据入库系统登陆');
+        var txt=  "注册成功，请登录。";
+        window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.success);
+    };
+    if(htm1=='2'){
+        $('#form2').show();
+        $('#form1').hide();
+        $('#titles').html('用户注册');
+        var txt=  "用户名已存在，请更换用户名。";
+        window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
+    };
+</script>
+</body>
+</html>

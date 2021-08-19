@@ -1,0 +1,848 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../static/assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link href="../static/assets/vendor/fonts/circular-std/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/assets/libs/css/style.css">
+    <link rel="stylesheet" href="../static/assets/vendor/fonts/fontawesome/css/fontawesome-all.css">
+    <link rel="stylesheet" href="../static/assets/vendor/select2/css/select2.css">
+    <link rel="stylesheet" href="../static/assets/vendor/summernote/css/summernote-bs4.css">
+    <link rel="stylesheet" href="../static/assets/vendor/fonts/material-design-iconic-font/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../static/assets/vendor/multi-select/css/multi-select.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="../static/js/index.js?sd=47"></script>
+    <title>Concept - Bootstrap 4 Admin Dashboard Template</title>
+    <style>
+        .suojin{text-indent:2%}
+    </style>
+    <script>
+        $(function () {
+           //获取链接创建COOKIE
+             $('.sqlda_bt').click(function () {
+                 var con = {"con":$('.sql_b').val()};
+                 console.log(con);
+                 $.ajax({
+                     type:'post',
+                     url:'/con_db',
+                     data:con,
+                     dataType:'json',
+                     //因为创建cookie的  此处存在问题
+                     success:function(data){
+
+                     },
+                     error:function(){
+
+                     }
+                 });
+             });
+             //获取点击数据库
+             $('.con-link').click(function () {
+                 var con = {"con":$(this).text()};
+                 //找到当前点击链接的下层div
+                 var jq_tables=$(this).next().find('.s_table');
+                 if(jq_tables.children().length==0) {
+                     console.log(con);
+                     $.ajax({
+                         type: 'post',
+                         url: '/con_db',
+                         data: con,
+                         dataType: 'json',
+                         //因为创建cookie的  此处存在问题
+                         success: function (data) {
+
+                         },
+                         //此处因为后端问题返回不了值  所以将代码写在error上
+                         error: function () {
+                             $.ajax({
+                                 type: 'post',
+                                 url: '/show_tables',
+                                 data: '',
+                                 dataType: 'json',
+                                 //因为创建cookie的  此处存在问题
+                                 success: function (res) {
+                                     jq_tables.html('');
+                                     //console.log(res['res_table']);
+                                     var res_table = res['res_table'];
+                                     res_table.forEach(function (item) {
+                                         var li_l = '<li class="nav-item tab-n" id = ' +item+ '><a class="nav-link table_c" href="javascript:;"><i class="fas fa-fw fa-table"></i>' + item + '</a></li>';
+                                         //var li_l = '<a class="nav-item tab-n" href="javascript:;" tab_test = ' +item+ '>' + item + '</a>';
+                                         jq_tables.append(li_l);
+                                         $('.page-aside').css({"overflow": "auto"});
+                                     });
+                                 },
+                                 error: function () {
+
+                                 }
+                             });
+                         }
+                     });
+                 }
+             });
+             //双击查询表
+             $('.nav-item').dblclick(function () {
+                 var tab_name = $(this).attr('tab_test');
+                 console.log(tab_name);
+             });
+             //ctr+r 组合键事件
+            $(document).keydown(function (event) {
+               if(event.ctrlCode && event.while == 192){
+                   alert(11);
+               };
+            });
+             //执行sql语句
+             $('.sub_sql').click(function () {
+                  $('.table_clear').html('');
+                  var sql = window.getSelection().toString();
+                  var sqls = {"sqls":sql};
+                  console.log(sqls);
+                  $.ajax({
+                     type:'post',
+                     url:'/sql_manager',
+                     data:sqls,
+                     dataType:'json',
+                     success:function (res) {
+                          console.log(res['res_sqldata']);
+                          var res_data = res['res_sqldata'];
+                          //判断返回类型
+                          var res_type = typeof res_data;
+                          console.log(res_type);
+                          if (res_type == 'number'){
+                              $('.table-striped').append('<p>成功执行 '+res_data+' 条！</p>');
+                          }
+                          else if(res_type == 'string'){
+                              $('.table-striped').append('<p>执行错误！ '+res_data+'</p>');
+                          }
+                          else{
+                              var h = '<thead><tr>';
+                              Object.keys(res_data[0]).forEach(function (item) {
+                                  h+='<th>'+item+'</th>';
+                              })
+                              h+='</tr></thead>';
+                              $('.sql_table').append(h);
+
+                              var b = '<tbody>'
+                              res_data.forEach(function (item) {
+                                  var h1 = '<tr>';
+                                  Object.values(item).forEach(function (item) {
+                                      h1+='<td>'+item+'</td>';
+                                  })
+                                  h1+='</tr>';
+                                  b+=h1;
+                              })
+                              b+='</tbody>';
+                              $('.sql_table').append(b);
+                              $('.table thead tr th').css({"color":"white"});
+                              $('.table thead tr th').css({"white-space":"nowrap"});
+                              $('.table thead tr th').css({"background-color":"#3d405c"});
+                          }
+                     },
+                     error:function () {
+                          alert('error');
+                     }
+                  });
+             });
+             //整合表
+             $('.btn_combine').click(function () {
+                 var combine_tablename = $('.combine_tablename').val();
+                 combine_tablename = {"combine_tablename":combine_tablename}
+                 console.log(combine_tablename);
+                 $.ajax({
+                     type:'post',
+                     url:'/table_combine',
+                     data:combine_tablename,
+                     dataType:'json',
+                     success:function(res){
+                        console.log(res);
+                        if (res['field_list'] == '0'){
+                            alert('请先选择一个数据库连接！')
+                        };
+                        if (res['field_list'] == '1'){
+                            alert('没有相关信息表！')
+                        };
+                        if (res['field_list'] == '2'){
+                            alert('整合成功！')
+                        };
+
+                     },
+                     error:function(){
+
+                     }
+                 });
+             });
+             //合并字段
+             $('.combine_field').click(function () {
+                  $.ajax({
+                      type: 'post',
+                      data: '',
+                      dataType: 'json',
+                      url: '/combine_field',
+                      success: function (res) {
+                          console.log(res['state']);
+                          var state = res['state'];
+                          if(state=='0'){
+                             alert('请先选择一个数据库连接！');
+                             return;
+                         };
+                          if(state=='1'){
+                             alert('请先完成交易信息和账户信息的整合！');
+                             return;
+                         };
+                          if(state=='2'){
+                             alert('字段整合完成！');
+                             return;
+                         };
+                      },
+                      error: function () {
+                      }
+                  });
+             });
+             //添加字段
+             $('.field-list').click(function () {
+                 $('#keep-order').html('');
+                 $.ajax({
+                     type:'post',
+                     data:'',
+                     dataType:'json',
+                     url:'/field_list',
+                     success:function(res){
+                         console.log(res['field_list']);
+                         var fields = res['field_list']
+                         if(fields=='0'){
+                             alert('请先选择一个数据库连接！');
+                             return;
+                         };
+                         if(fields.length<=0){
+                             alert('请先整合表！');
+                             return;
+                         };
+                         var field_html = '';
+                         fields.forEach(function (item) {
+                            field_html = field_html+'<option value=\''+item+'\'>'+item+'</option>'
+                         });
+                         console.log(field_html);
+                         $('#keep-order').html(field_html);
+                         $('#keep-order').multiSelect();
+                     },
+                     error:function(){
+                         alert('error');
+                     }
+                 })
+             });
+        })
+    </script>
+</head>
+
+<body>
+    <!-- ============================================================== -->
+    <!-- main wrapper -->
+    <!-- ============================================================== -->
+    <div class="dashboard-main-wrapper">
+        <!-- ============================================================== -->
+        <!-- navbar -->
+        <!-- ============================================================== -->
+        <div class="dashboard-header">
+            <nav class="navbar navbar-expand-lg bg-white fixed-top">
+                <a class="navbar-brand" href="/index">大数据分析面板</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto navbar-right-top">
+                        <li class="nav-item">
+                            <div id="custom-search" class="top-search-bar">
+                                <div class="input-group mb-3">
+                        			<input type="text" class="form-control">
+                        			<div class="input-group-append">
+                        				<button type="button" class="btn btn-primary">搜索</button>
+                        			</div>
+                        		</div>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown notification">
+                            <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-fw fa-bell"></i> <span class="indicator"></span></a>
+                            <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
+                                <li>
+                                    <div class="notification-title"> Notification</div>
+                                    <div class="notification-list">
+                                        <div class="list-group">
+                                            <a href="#" class="list-group-item list-group-item-action active">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-2.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Jeremy Rakestraw</span>accepted your invitation to join the team.
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-3.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">John Abraham </span>is now following you
+                                                        <div class="notification-date">2 days ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-4.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Monaan Pechi</span> is watching your main repository
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-5.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Jessica Caruso</span>accepted your invitation to join the team.
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="list-footer"> <a href="#">View all notifications</a></div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown connection">
+                            <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="fas fa-fw fa-th"></i> </a>
+                            <ul class="dropdown-menu dropdown-menu-right connection-dropdown">
+                                <li class="connection-list">
+                                    <div class="row">
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/github.png" alt="" > <span>Github</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/dribbble.png" alt="" > <span>Dribbble</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/dropbox.png" alt="" > <span>Dropbox</span></a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/bitbucket.png" alt=""> <span>Bitbucket</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/mail_chimp.png" alt="" ><span>Mail chimp</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/slack.png" alt="" > <span>Slack</span></a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="conntection-footer"><a href="#">More</a></div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown nav-user">
+                            <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="../static/assets/images/avatar-1.jpg" alt="" class="user-avatar-md rounded-circle"></a>
+                            <div class="dropdown-menu dropdown-menu-right nav-user-dropdown" aria-labelledby="navbarDropdownMenuLink2">
+                                <div class="nav-user-info">
+                                    <h5 class="mb-0 text-white nav-user-name">用户</h5>
+                                    <span class="status"></span><span class="ml-2">Available</span>
+                                </div>
+                                <a class="dropdown-item" href="/usercenter"><i class="fas fa-user mr-2"></i>用户信息</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>设置</a>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-power-off mr-2"></i>退出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end navbar -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- left sidebar -->
+        <!-- ============================================================== -->
+        <div class="nav-left-sidebar sidebar-dark">
+            <div class="menu-list">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <a class="d-xl-none d-lg-none" href="#">数据可视化分析</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav flex-column">
+                            <li class="nav-divider">
+                                Menu
+                            </li>
+                            <li class="nav-item ">
+                                <a class="nav-link active" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-1" aria-controls="submenu-1"><i class="fa fa-fw fa-user-circle"></i>数据可视化分析<span class="badge badge-success">6</span></a>
+                                <div id="submenu-1" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/data_view">可疑人员分布图</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/transaction">交易流水分析</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-2" aria-controls="submenu-2"><i class="fa fa-fw fa-rocket"></i>添加数据库连接</a>
+                                <div id="submenu-2" class="collapse submenu" style="">
+                                  <a class="nav-link" href="/index">添加数据库</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-3" aria-controls="submenu-3"><i class="fas fa-fw fa-chart-pie"></i>数据入库</a>
+                                <div id="submenu-3" class="collapse submenu" style="">
+								     <a class="nav-link" href="/import_sql">数据入库</a>
+                                </div>
+                            </li>
+                            <li class="nav-item ">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-4" aria-controls="submenu-4"><i class="fab fa-fw fa-wpforms"></i>数据库操作</a>
+                                <div id="submenu-4" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/operation">数据库管理工具</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-5" aria-controls="submenu-5"><i class="fas fa-fw fa-table"></i>数据采集</a>
+                                <div id="submenu-5" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/colection">爬虫采集</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6" aria-controls="submenu-6"><i class="fas fa-fw fa-table"></i>权限开通</a>
+                                <div id="submenu-6" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/">权限管理</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/">权限开通</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-divider">
+                                Features
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6" aria-controls="submenu-6"><i class="fas fa-fw fa-file"></i> Pages </a>
+                                <div id="submenu-6" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/blank-page.html">Blank Page</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/blank-page-header.html">Blank Page Header</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/login.html">Login</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/404-page.html">404 page</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/sign-up.html">Sign up Page</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/forgot-password.html">Forgot Password</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/pricing.html">Pricing Tables</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/timeline.html">Timeline</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/calendar.html">Calendar</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/sortable-nestable-lists.html">Sortable/Nestable List</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/widgets.html">Widgets</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/media-object.html">Media Objects</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/cropper-image.html">Cropper</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/color-picker.html">Color Picker</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-7" aria-controls="submenu-7"><i class="fas fa-fw fa-inbox"></i>Apps <span class="badge badge-secondary">New</span></a>
+                                <div id="submenu-7" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/inbox.html">Inbox</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/email-details.html">Email Detail</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/email-compose.html">Email Compose</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/message-chat.html">Message Chat</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-8" aria-controls="submenu-8"><i class="fas fa-fw fa-columns"></i>Icons</a>
+                                <div id="submenu-8" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-fontawesome.html">FontAwesome Icons</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-material.html">Material Icons</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-simple-lineicon.html">Simpleline Icon</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-themify.html">Themify Icon</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-flag.html">Flag Icons</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/icon-weather.html">Weather Icon</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-9" aria-controls="submenu-9"><i class="fas fa-fw fa-map-marker-alt"></i>Maps</a>
+                                <div id="submenu-9" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/map-google.html">Google Maps</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="pages/map-vector.html">Vector Maps</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-10" aria-controls="submenu-10"><i class="fas fa-f fa-folder"></i>Menu Level</a>
+                                <div id="submenu-10" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">Level 1</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-11" aria-controls="submenu-11">Level 2</a>
+                                            <div id="submenu-11" class="collapse submenu" style="">
+                                                <ul class="nav flex-column">
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" href="#">Level 1</a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" href="#">Level 2</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">Level 3</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end left sidebar -->
+        <!-- ============================================================== -->
+        <!--退出框-->
+        <div class="card-body">
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">退出登录</h5>
+                            <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </a>
+                        </div>
+                        <div class="modal-body">
+                            <p>请确认是否退出</p>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-secondary" data-dismiss="modal">取消</a>
+                            <a href="#" class="btn btn-primary" id="login_out">退出</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </div>
+        <!-- ============================================================== -->
+        <!-- wrapper  -->
+        <!-- ============================================================== -->
+        <div class="dashboard-wrapper">
+            <div class="container-fluid">
+                <aside class="page-aside">
+                    <div class="aside-content">
+                        <div class="aside-header">
+                            <button class="navbar-toggle" data-target=".aside-nav" data-toggle="collapse" type="button"><span class="icon"><i class="fas fa-caret-down"></i></span></button><span class="title">数据库管理工具</span>
+                            <p class="description">Service Sql</p>
+                        </div>
+                        <div class="aside-compose"><a class="btn btn-lg btn-secondary btn-block" href="#">数据库列表</a></div>
+                        <div class="aside-nav collapse">
+                            <ul class="nav">
+                                {% for list in con_list1 %}
+                                    <li class="nav-item">
+                                        <a class="nav-link con-link utf8_test" host = "{{ list.con }}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#{{ list.ID }}" aria-controls="{{ list.ID }}"><i class="fas fa-fw fa-database"></i> {{ list.con }}</a>
+                                        <div id="{{ list.ID }}" class="collapse submenu" style="">
+                                            <ul class="nav flex-column s_table">
+
+                                            </ul>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </aside>
+                <div class="main-content container-fluid p-0">
+                    <div class="email-head">
+                        <div class="email-head-title">数据库查询<span class="icon mdi mdi-edit"></span></div>
+                    </div>
+                    <div class="email-compose-fields">
+                        <div class="form-group">
+							<label for="input-select">选择数据库</label>
+							<select class="form-control sqlda_bt sql_b" id="input-select">
+                                <option>请选择数据库</option>
+                                {% for i in con_list %}
+                                        <option>{{ i }}</option>
+                                  {% endfor %}
+							</select>
+                            <br>
+                            <a href="#" class="btn btn-rounded btn-primary" data-toggle="modal" data-target="#exampleModal_combine">整合表</a>
+                            <a href="#" class="btn btn-rounded btn-success combine_field">整合字段</a>
+                            <a href="#" class="btn btn-rounded btn-secondary field-list" data-toggle="modal" data-target="#exampleModal_fenxi">数据分析</a>
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal_combine" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel1">数据表整合</h5>
+                                            <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </a>
+                                        </div>
+                                            <!-- ============================================================== -->
+                                            <!-- keep over multiselectd  -->
+                                            <!-- ============================================================== -->
+                                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12" style="max-width:100%">
+                                                <div class="card">
+                                                    <h5 class="card-header">整合表</h5>
+                                                    <form action="#" id="basic_forms" data-parsley-validate="">
+                                                        <div class="form-group">
+
+                                                            <input type="text" class="form-control combine_tablename">
+                                                            <div class="valid-feedback">
+                                                                Looks good!
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            <!-- ============================================================== -->
+                                            <!-- end keep over multiselectd  -->
+                                            <!-- ============================================================== -->
+                                        <div class="modal-footer">
+                                            <a href="#" class="btn btn-primary btn_combine" id="" data-dismiss="modal">开始整合</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Modal -->
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal_fenxi" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">数据分析</h5>
+                                            <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </a>
+                                        </div>
+                                            <!-- ============================================================== -->
+                                            <!-- keep over multiselectd  -->
+                                            <!-- ============================================================== -->
+                                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12" style="max-width:100%">
+                                                <div class="card">
+                                                    <h5 class="card-header">选择字段</h5>
+                                                    <p class="suojin">字段顺序：1.主卡户名 2.主卡卡号 3.对方户名 </p>
+                                                    <p class="suojin">4.对方卡号 5.交易标志 6.交易金额 7.交易摘要</p>
+                                                    <div class="form-group">
+                                                        <label for="validationCustom02">分析表名：</label>
+                                                        <input type="text" class="form-control" id="table_name" placeholder="" value="" required>
+                                                        <div class="valid-feedback">
+                                                            Looks good!
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <select id='keep-order' multiple='multiple'>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- ============================================================== -->
+                                            <!-- end keep over multiselectd  -->
+                                            <!-- ============================================================== -->
+                                        <div class="modal-footer">
+                                            <!--<a href="#" class="btn btn-secondary" data-dismiss="modal">Close</a>-->
+                                            <a href="#" class="btn btn-primary" id="analysis" data-dismiss="modal">开始分析</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Modal -->
+						</div>
+                    </div>
+                    <div class="email editor">
+                        <div class="col-md-12 p-0">
+                            <div class="form-group">
+                                <label class="control-label sr-only" for="summernote">Descriptions </label>
+                                <textarea class="form-control" id="summernote" name="editordata" rows="6" placeholder="Write Descriptions"></textarea>
+                            </div>
+                        </div>
+                        <div class="email action-send">
+                            <div class="col-md-12 ">
+                                <div class="form-group">
+                                    <button class="btn btn-primary btn-space sub_sql" type="button"><i class="icon s7-mail"></i>执行</button>
+                                    <button class="btn btn-secondary btn-space" type="button"><i class="icon s7-close"></i>取消</button>
+                                </div>
+                            </div>
+                        </div>
+						<!-- ============================================================== -->
+						<!-- basic table  -->
+						<!-- ============================================================== -->
+						<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+							<div class="card">
+								<h5 class="card-header">查询结果</h5>
+								<div class="card-body">
+									<div class="table-responsive">
+										<table class="table table-striped table-bordered first sql_table table_clear">
+
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- ============================================================== -->
+						<!-- end basic table  -->
+						<!-- ============================================================== -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- end main wrapper -->
+    <!-- ============================================================== -->
+    <!-- Optional JavaScript -->
+    <script src="../static/assets/vendor/jquery/jquery-3.3.1.min.js"></script>
+    <script src="../static/assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <script src="../static/assets/vendor/slimscroll/jquery.slimscroll.js"></script>
+    <script src="../static/assets/vendor/select2/js/select2.min.js"></script>
+    <script src="../static/assets/vendor/multi-select/js/jquery.multi-select.js"></script>
+    <script src="../static/assets/vendor/summernote/js/summernote-bs4.js"></script>
+    <script src="../static/assets/libs/js/main-js.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('.js-example-basic-multiple').select2({ tags: true });
+    });
+    </script>
+    <script>
+    $(document).ready(function() {
+        $('#summernote').summernote({
+            height: 300
+
+        });
+    });
+    </script>
+    <script>
+    $('#callbacks').multiSelect({
+        afterSelect: function(values) {
+            alert("Select value: " + values);
+        },
+        afterDeselect: function(values) {
+            alert("Deselect value: " + values);
+        }
+    });
+    </script>
+    <script>
+    //$('#keep-order').multiSelect({ keepOrder: true });
+    </script>
+    <script>
+    /*$('#public-methods').multiSelect();
+    $('#select-all').click(function() {
+        $('#public-methods').multiSelect('select_all');
+        return false;
+    });
+    $('#deselect-all').click(function() {
+        $('#public-methods').multiSelect('deselect_all');
+        return false;
+    });
+    $('#select-100').click(function() {
+        $('#public-methods').multiSelect('select', ['elem_0', 'elem_1'..., 'elem_99']);
+        return false;
+    });
+    $('#deselect-100').click(function() {
+        $('#public-methods').multiSelect('deselect', ['elem_0', 'elem_1'..., 'elem_99']);
+        return false;
+    });
+    $('#refresh').on('click', function() {
+        $('#public-methods').multiSelect('refresh');
+        return false;
+    });
+    $('#add-option').on('click', function() {
+        $('#public-methods').multiSelect('addOption', { value: 42, text: 'test 42', index: 0 });
+        return false;
+    });*/
+    </script>
+    <script>
+    $('#optgroup').multiSelect({ selectableOptgroup: true });
+    </script>
+    <script>
+    $('#disabled-attribute').multiSelect();
+    </script>
+    <script>
+    $('#custom-headers').multiSelect({
+        selectableHeader: "<div class='custom-header'>Selectable items</div>",
+        selectionHeader: "<div class='custom-header'>Selection items</div>",
+        selectableFooter: "<div class='custom-header'>Selectable footer</div>",
+        selectionFooter: "<div class='custom-header'>Selection footer</div>"
+    });
+    </script>
+</body>
+
+</html>
