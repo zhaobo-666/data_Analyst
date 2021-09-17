@@ -18,10 +18,10 @@ cors = CORS(app, resources={r"/.*": {"origins": ["http://8.141.50.171:9090", "ht
 
 <<<<<<< HEAD
 # 系统库连接
-host = "8.141.50.171"
+host = "127.0.0.1"
 port = 3306
 user = "root"
-pwd = "zb19980329"
+pwd = "123456"
 db = "fly_fish"
 
 # 迁移项目请更改目录
