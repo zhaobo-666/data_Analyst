@@ -1,0 +1,726 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../static/assets/vendor/bootstrap/css/bootstrap.min.css">
+    <link href="../static/assets/vendor/fonts/circular-std/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/assets/libs/css/style.css">
+    <link rel="stylesheet" href="../static/assets/vendor/fonts/fontawesome/css/fontawesome-all.css">
+    <link rel="stylesheet" href="../static/assets/vendor/bootstrap-select/css/bootstrap-select.css">
+    <script src="../static/js/jquery.js"></script>
+    <script src="../static/js/xlsx.full.min.js"></script>
+    <script src="../static/js/index.js"></script>
+    <script src="../static/js/jquery.js"></script>
+
+{#    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">#}
+
+    <link href="../static/css/datatables.2.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../static/css/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this page -->
+    <link href="../static/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+    <script>
+
+         function selectFile(){
+            //触发 文件选择的click事件
+               $("#file").trigger("click");
+            }
+
+         $(function () {
+             var table;
+             /*** 导入 ***/
+
+            $('#file').change(function(e) {
+                 $("#myDiv").show();
+                 var files = e.target.files;
+                 var fileReader = new FileReader();
+                 fileReader.onload = function(ev) {
+                     try {
+                         var data = ev.target.result,
+                             workbook = XLSX.read(data, {
+                                 type: 'binary'
+                             }), // 以二进制流方式读取得到整份excel表格对象
+                             persons = []; // 存储获取到的数据
+                     } catch (e) {
+                         console.log('文件类型不正确');
+                         return;
+                     }
+
+                     // 表格的表格范围，可用于判断表头是否数量是否正确
+                     var fromTo = '';
+                     // 遍历每张表读取
+                     for (var sheet in workbook.Sheets) {
+                         if (workbook.Sheets.hasOwnProperty(sheet)) {
+                             fromTo = workbook.Sheets[sheet]['!ref'];
+                             persons = persons.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                              break; // 如果只取第一张表，就取消注释这行
+                         }
+                     }
+                     //var str="";
+                     var new_array = [];
+                     for(var i=0;i<persons.length;i++){
+                         if(i==persons.length-1){
+                             //str+=JSON.stringify(persons[i]);
+                             new_array.push(persons[i])
+                         }else{
+                             //console.log(persons[i]);
+                             new_array.push(persons[i])
+                             //str+=JSON.stringify(persons[i])+"*"
+                         }
+                     }
+                     //console.log(new_array);
+                     //页面加载
+                     var cols = [];
+                     var th_name_array = new_array[0];
+                     var th_name_str = '';
+                     var td_val_str = '';
+                     var input_place_str = '';
+                     Object.keys(th_name_array).forEach(function (item) {
+                         input_place_str = input_place_str + '<input type="text" data-parsley-trigger="change" required="" placeholder="'+item+'" autocomplete="off" class="form-control">'
+                         cols.push({data:item});
+                         th_name_str =th_name_str + "<th>"+item+"</th>";
+                     });
+                     $('.before_form2').before().html('');
+
+                     $('.input_insert2').prepend(input_place_str);
+                     $('.table_data2 thead tr').html('');
+
+                     $('.table_data2 thead tr').append(th_name_str);
+
+                     new_array.forEach(function (item) {
+                         td_val_str = td_val_str + "<tr>";
+                         Object.values(item).forEach(function (vals) {
+                              td_val_str = td_val_str + "<td>"+vals+"</td>";
+                         });
+                         td_val_str = td_val_str + "</tr>";
+                     });
+                     $('.table_data2 tbody').html("");
+
+                     $('.table_data2 tbody').append(td_val_str);
+
+                     console.log(new_array);
+
+
+
+                     table = $('#myTable2').DataTable({
+                         "oLanguage": {
+                        "sSearch": "搜索:",
+                        "sLengthMenu": "每页显示 _MENU_ 条记录",
+                        "sZeroRecords": "抱歉， 没有找到",
+                        "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                        "sInfoEmpty": "没有数据",
+                        "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                        "oPaginate": {
+                        "sPrevious": "前一页",
+                        "sNext": "后一页",},
+                        },
+                      dom: 'Bfrtip',
+                      buttons: [
+                            'copy', 'csv', 'excel', 'pdf', 'print'
+                        ],
+                      data:new_array,
+                      columns:cols
+                     });
+
+
+
+                 };
+                 // 以二进制方式打开文件
+                 fileReader.readAsBinaryString(files[0]);
+                //获取文件名称展示在页面上
+                var fliePath=$("#file").val();
+                var arr=fliePath.lastIndexOf("\\");
+                fliePath=fliePath.substring(arr+1,fliePath.length);
+                $("#fileName").text(fliePath);
+
+             });
+
+         })
+    </script>
+    <style>
+        .span_input{
+            float: left;
+        }
+        .card_bod{
+            margin-bottom: 10px;
+            padding-right: .75rem;
+            padding-left: .75rem;
+        }
+
+        .span_input input{
+            width: 6%;
+            margin-top: 3px;
+            margin-left: 5px;
+            display:inline-block;
+        }
+        .dt-buttons button{
+            color: #fff;
+            background-color: #1cc88a;
+            border-color: #1cc88a;
+            text-decoration: none;
+            border: 1px solid transparent;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: .35rem;
+        }
+    </style>
+    <title></title>
+</head>
+
+<body>
+    <!-- ============================================================== -->
+    <!-- main wrapper -->
+    <!-- ============================================================== -->
+    <div class="dashboard-main-wrapper">
+        <!-- ============================================================== -->
+        <!-- navbar -->
+        <!-- ============================================================== -->
+        <div class="dashboard-header">
+            <nav class="navbar navbar-expand-lg bg-white fixed-top">
+                <a class="navbar-brand" href="/index">飞鱼数据面板</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto navbar-right-top">
+                        <li class="nav-item">
+                            <div id="custom-search" class="top-search-bar">
+                                <div class="input-group mb-3">
+                        			<input type="text" class="form-control">
+                        			<div class="input-group-append">
+                        				<button type="button" class="btn btn-primary">搜索</button>
+                        			</div>
+                        		</div>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown notification">
+                            <a class="nav-link nav-icons" href="#" id="navbarDropdownMenuLink1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-fw fa-bell"></i> <span class="indicator"></span></a>
+                            <ul class="dropdown-menu dropdown-menu-right notification-dropdown">
+                                <li>
+                                    <div class="notification-title"> Notification</div>
+                                    <div class="notification-list">
+                                        <div class="list-group">
+                                            <a href="#" class="list-group-item list-group-item-action active">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-2.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Jeremy Rakestraw</span>accepted your invitation to join the team.
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-3.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">John Abraham </span>is now following you
+                                                        <div class="notification-date">2 days ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-4.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Monaan Pechi</span> is watching your main repository
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action">
+                                                <div class="notification-info">
+                                                    <div class="notification-list-user-img"><img src="../static/assets/images/avatar-5.jpg" alt="" class="user-avatar-md rounded-circle"></div>
+                                                    <div class="notification-list-user-block"><span class="notification-list-user-name">Jessica Caruso</span>accepted your invitation to join the team.
+                                                        <div class="notification-date">2 min ago</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="list-footer"> <a href="#">View all notifications</a></div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown connection">
+                            <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="fas fa-fw fa-th"></i> </a>
+                            <ul class="dropdown-menu dropdown-menu-right connection-dropdown">
+                                <li class="connection-list">
+                                    <div class="row">
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/github.png" alt="" > <span>Github</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/dribbble.png" alt="" > <span>Dribbble</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/dropbox.png" alt="" > <span>Dropbox</span></a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/bitbucket.png" alt=""> <span>Bitbucket</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/mail_chimp.png" alt="" ><span>Mail chimp</span></a>
+                                        </div>
+                                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-12 ">
+                                            <a href="#" class="connection-item"><img src="../static/assets/images/slack.png" alt="" > <span>Slack</span></a>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="conntection-footer"><a href="#">More</a></div>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown nav-user">
+                            <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="../static/assets/images/avatar-1.jpg" alt="" class="user-avatar-md rounded-circle"></a>
+                            <div class="dropdown-menu dropdown-menu-right nav-user-dropdown" aria-labelledby="navbarDropdownMenuLink2">
+                                <div class="nav-user-info">
+                                    <h5 class="mb-0 text-white nav-user-name">用户</h5>
+                                    <span class="status"></span><span class="ml-2">Available</span>
+                                </div>
+                                <a class="dropdown-item" href="/usercenter"><i class="fas fa-user mr-2"></i>用户信息</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>设置</a>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-power-off mr-2"></i>退出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end navbar -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- left sidebar -->
+        <!-- ============================================================== -->
+        <div class="nav-left-sidebar sidebar-dark">
+            <div class="menu-list">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <a class="d-xl-none d-lg-none" href="#">数据可视化分析</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav flex-column">
+                            <li class="nav-divider">
+                                Menu
+                            </li>
+                            <li class="nav-item ">
+                                <a class="nav-link active" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-1" aria-controls="submenu-1"><i class="fa fa-fw fa-user-circle"></i>数据可视化分析<span class="badge badge-success">6</span></a>
+                                <div id="submenu-1" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/data_view">可疑人员分布图</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="#">交易流水分析</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-2" aria-controls="submenu-2"><i class="fa fa-fw fa-rocket"></i>添加数据库连接</a>
+                                <div id="submenu-2" class="collapse submenu" style="">
+                                  <a class="nav-link" href="/index">添加数据库</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-3" aria-controls="submenu-3"><i class="fas fa-fw fa-chart-pie"></i>数据入库</a>
+                                <div id="submenu-3" class="collapse submenu" style="">
+								     <a class="nav-link" href="/import_sql">数据入库</a>
+                                </div>
+                            </li>
+                            <li class="nav-item ">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-4" aria-controls="submenu-4"><i class="fab fa-fw fa-wpforms"></i>数据库操作</a>
+                                <div id="submenu-4" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/operation">数据库管理工具</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/super_table">超级表格</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-5" aria-controls="submenu-5"><i class="fas fa-fw fa-table"></i>数据采集</a>
+                                <div id="submenu-5" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/colection">爬虫采集</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6" aria-controls="submenu-6"><i class="fas fa-fw fa-table"></i>权限开通</a>
+                                <div id="submenu-6" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/">权限管理</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/">权限开通</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- end left sidebar -->
+        <!-- ============================================================== -->
+         <!--退出框-->
+            <div class="card-body">
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">退出登录</h5>
+                                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </a>
+                            </div>
+                            <div class="modal-body">
+                                <p>请确认是否退出</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#" class="btn btn-secondary" data-dismiss="modal">取消</a>
+                                <a href="#" class="btn btn-primary" id="login_out">退出</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+          <!--删除框-->
+            <div class="card-body">
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel1">删除连接</h5>
+                                <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </a>
+                            </div>
+                            <div class="modal-body">
+                                <p>请确认是否删除</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#" class="btn btn-secondary" data-dismiss="modal">取消</a>
+                                <a href="#" class="btn btn-primary" data-dismiss="modal" id="del_col">删除</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        <!-- ============================================================== -->
+        <!-- wrapper  -->
+        <!-- ============================================================== -->
+        <div class="dashboard-wrapper">
+            <div class="container-fluid dashboard-content">
+                <!-- ============================================================== -->
+                <!-- pageheader  -->
+                <!-- ============================================================== -->
+                <div class="row">
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                        <div class="page-header">
+                            <h3 class="mb-2">超级表格</h3>
+                            <p class="pageheader-text">Proin placerat ante duiullam scelerisque a velit ac porta, fusce sit amet vestibulum mi. Morbi lobortis pulvinar quam.</p>
+                            <div class="page-breadcrumb">
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><a href="#" class="breadcrumb-link">数据库操作</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page">超级表格</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- end pageheader  -->
+                <!-- ============================================================== -->
+
+                <div class="row">
+                    <div class="tab-regular">
+                        <ul class="nav nav-tabs " id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">服务端模式</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">客户端模式</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                <!--表格开始-->
+                                <div class="row">
+                                    <div class="card_bod span_input input_insert">
+                                        {% for col_tab_input in table_data[0].keys() %}
+                                            {% if table_data|length != 1 %}
+                                                <input type="text" data-parsley-trigger="change" required="" placeholder="{{ col_tab_input }}" autocomplete="off" class="form-control">
+                                            {% endif %}
+                                        {% endfor %}
+                                        <a class="before_form" style="display: none"></a>
+                                        <a href="#" class="btn btn-primary searchs">查询</a>
+                                        <a href="/super_table" class="btn btn-warning" >刷新</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                      <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12" style="flex: 0 0 100%;;max-width: 100%">
+                                            <div class="card">
+                                                <h5 class="card-header">Super Table</h5>
+                                                <div class="card-body" style="overflow: auto">
+                                                    <!--table start-->
+                                                    <table class="table table-bordered table_data" id="myTable" width="100%" cellspacing="0">
+                                                      <thead>
+                                                            <tr class="tab_columns">
+                                                                {% for col_table in table_data[0].keys() %}
+                                                                    <th>{{ col_table }}</th>
+                                                                {% endfor %}
+                                                            </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                           <tr>
+                                                               <td></td>
+                                                           </tr>
+                                                      </tbody>
+                                                    </table>
+                                                    <!--table end-->
+                                                </div>
+                                            </div>
+                                      </div>
+                                </div>
+                                <!--表格结束-->
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                 <!--表格开始-->
+                                <div class="row">
+                                    <div class="card_bod span_input input_insert2">
+                                        <a class="before_form2" style="display: none"></a>
+                                        <a href="#" class="btn btn-info" onclick="selectFile();">选择文件</a>
+                                        <a href="/super_table" class="btn btn-warning" >刷新</a>
+                                        <input type="file" id="file"  style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                      <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12" style="flex: 0 0 100%;;max-width: 100%">
+                                            <div class="card">
+                                                <h5 class="card-header">Super Table</h5>
+                                                <div class="card-body" style="overflow: auto">
+                                                    <!--table start-->
+                                                    <table class="table table-bordered table_data2" id="myTable2" width="100%" cellspacing="0">
+                                                      <thead>
+                                                            <tr>
+                                                                <th></th>
+                                                            </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                           <tr>
+                                                               <td></td>
+                                                           </tr>
+                                                      </tbody>
+                                                    </table>
+                                                    <!--table end-->
+                                                </div>
+                                            </div>
+                                      </div>
+                                </div>
+                                <!--表格结束-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- end main wrapper -->
+    <!-- ============================================================== -->
+    <!-- Optional JavaScript -->
+    <!-- jquery 3.3.1 -->
+    <script>
+     $(function () {
+
+         //页面预加载判断
+         /*var table_da = $('#js_class').attr('class');
+         console.log(table_da);
+         if(table_da != 'null'){
+                 $('#myTable').DataTable({
+                    "oLanguage": {
+                    "sSearch": "搜索:",
+                    "sLengthMenu": "每页显示 _MENU_ 条记录",
+                    "sZeroRecords": "抱歉， 没有找到",
+                    "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                    "sInfoEmpty": "没有数据",
+                    "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                    "oPaginate": {
+                    "sPrevious": "前一页",
+                    "sNext": "后一页",},
+                    },
+                  dom: 'Bfrtip',
+                  buttons: [
+                        'copy', 'csv', 'excel', 'pdf', 'print'
+                    ]
+              });
+         };*/
+
+
+         //多条件查询，动态传参 废弃
+         function reloadTable() {
+            var table = $('#myTable').DataTable();
+            table.ajax.reload();
+        }
+
+         var tab_column = $('.tab_columns th');
+         var tab_col_arr = [];
+         for (var i=0;i<tab_column.length;i++){
+                  var obj_col = {"data":tab_column[i].innerText};
+                  tab_col_arr.push(obj_col);
+              };
+         console.log(tab_col_arr);
+
+         //多条件查询 全局变量
+         var search_arr = {};
+
+         //Datatables 设置
+         $.dataTablesSettings={
+            //去掉搜索框
+            searching : false,
+            "oLanguage": {
+                "sSearch": "搜索:",
+                "sLengthMenu": "每页显示 _MENU_ 条记录",
+                "sZeroRecords": "抱歉， 没有找到",
+                "sInfo": "从 _START_ 到 _END_ /共 _TOTAL_ 条数据",
+                "sInfoEmpty": "没有数据",
+                "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+                "oPaginate": {
+                "sPrevious": "前一页",
+                "sNext": "后一页",},
+                },
+
+            //"bFilter": true,
+
+            "fnServerParams": function (aoData) {
+
+            },
+            "fnDrawCallback": function () {
+
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                        'copy', 'csv', 'excel', 'pdf', 'print'
+                    ],
+
+            //开启服务器模式
+            serverSide: true,
+           //数据来源（包括处理分页，排序，过滤） ，即url，action，接口，等等
+            //ajax: '/table_serve',
+             ajax:{
+               "url": '/table_serve',
+               "type": "GET",
+               "data":function(d){
+                   //删除多余请求参数
+                   for(var key in d){
+                       if(key.indexOf("columns")==0||key.indexOf("order")==0||key.indexOf("search")==0){
+                           delete d[key]
+                       }
+                   }
+                   //附加参数
+                   if(search_arr){
+                       console.log(search_arr)
+                       $.extend(d,search_arr)
+                   }
+               },
+                 //数据处理（当数据加载完毕时触发）
+               "dataSrc":function(json){
+                   iStart = json.start + 1;//起始行号
+                   return json.data;
+               }
+             },
+            columns: tab_col_arr,
+         };
+
+         var da_len = $('.tab_columns').children().length
+         console.log(da_len);
+         if(da_len!=1){
+             var dt_table = $('#myTable').DataTable($.dataTablesSettings);
+         }
+
+          //查询事件
+         $('.searchs').click(function () {
+              search_arr = {}
+              var input_arr = $('.input_insert input');
+              for (var i=0;i<input_arr.length;i++){
+                  if(input_arr[i].value != ''){
+                      search_arr["search_"+input_arr[i].placeholder] = input_arr[i].value.rep_str();
+                  }
+              };
+              reloadTable();
+              //table.rows.clear().rows.add(getData()).draw();
+
+         });
+
+
+     })
+
+    </script>
+    <script src="../static/assets/vendor/jquery/jquery-3.3.1.min.js"></script>
+    <script src="../static/assets/vendor/bootstrap-select/js/bootstrap-select.js"></script>
+
+    <!-- bootstap bundle js -->
+    <script src="../static/assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <!-- slimscroll js -->
+    <script src="../static/assets/vendor/slimscroll/jquery.slimscroll.js"></script>
+    <!-- main js -->
+    <script src="../static/assets/libs/js/main-js.js"></script>
+    <!-- sparkline js -->
+    <script src="../static/assets/vendor/charts/sparkline/jquery.sparkline.js"></script>
+    <!-- morris js -->
+    <script src="../static/assets/vendor/charts/morris-bundle/raphael.min.js"></script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="../static/datatables/jquery.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="../static/datatables/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="../static/datatables/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="../static/datatables/jquery.dataTables.min.js"></script>
+    <script src="../static/datatables/dataTables.bootstrap4.min.js"></script>
+
+{#    <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>#}
+    <script src="../static/js/dataTables.buttons.min.js"></script>
+    <script src="../static/js/buttons.print.min.js"></script>
+
+{#    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.print.min.js"></script>#}
+    <script src="../static/js/buttons.html5.min.js"></script>
+{#    <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>#}
+    <script src="../static/js/pdfmake.min.js"></script>
+    <script src="../static/js/jszip.min.js"></script>
+    <script src="../static/js/vfs_fonts.js"></script>
+
+
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>#}
+</body>
+
+</html>

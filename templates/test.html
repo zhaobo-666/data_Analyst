@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/v/dt/jq-3.3.1/jszip-2.5.0/dt-1.10.18/af-2.3.3/b-1.5.6/b-colvis-1.5.6/b-flash-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/fc-3.2.5/fh-3.1.4/kt-2.5.0/r-2.2.2/rg-1.1.0/rr-1.2.4/sc-2.0.0/sl-1.3.0/datatables.min.css"/>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/v/dt/jq-3.3.1/jszip-2.5.0/dt-1.10.18/af-2.3.3/b-1.5.6/b-colvis-1.5.6/b-flash-1.5.6/b-html5-1.5.6/b-print-1.5.6/cr-1.5.0/fc-3.2.5/fh-3.1.4/kt-2.5.0/r-2.2.2/rg-1.1.0/rr-1.2.4/sc-2.0.0/sl-1.3.0/datatables.min.js"></script>
+    <title>dataTablesDemo</title>
+</head>
+<body>
+<table id="table_id" class="display">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Office</th>
+        <th>Extn.</th>
+        <th>Start date</th>
+        <th>Salary</th>
+        <th>note</th>
+    </tr>
+    </thead>
+    <!--<tfoot>-->
+    <!--<tr>-->
+    <!--<th>Name</th>-->
+    <!--<th>Position</th>-->
+    <!--<th>Office</th>-->
+    <!--<th>Extn.</th>-->
+    <!--<th>Start date</th>-->
+    <!--<th>Salary</th>-->
+    <!--</tr>-->
+    <!--</tfoot>-->
+</table>
+
+<script>
+    $(function () {
+        $('#table_id').DataTable(
+            {
+                ajax: {
+                    url: "resultDemo.txt"
+                },
+                columnDefs: [
+                    {
+                        //-1 则是最后一个元素，默认是从0开始
+                        targets: -1,
+                        //visible: false,
+                        sortable: false,
+                        render: function (data, type, row) {
+                            return '<a href="#" title="详情">' +
+                                '<i class="glyphicon glyphicon-eye-open"></i> ' +
+                                '</a>' +
+                                '<a href="#editProject" data-toggle="modal" data-id="' + row.name + '" title="修改">' +
+                                '<i class="glyphicon glyphicon-pencil"></i> ' +
+                                '</a>' +
+                                '<a href="#delProject" data-toggle="modal" data-id="' + row.name + '" title="删除">' +
+                                '<i class="glyphicon glyphicon-trash text-danger"></i> ' +
+                                '</a>';
+                        }
+                    }
+                ],
+                //行设置，data是指json的key，title就是table列头
+                columns: [
+                    {"data": "Name", "title": "name"},
+                    {"data": "Position", "title": "position"},
+                    {"data": "Office", "title": "office"},
+                    {"data": "Extn", "title": "extn"},
+                    {"data": "Start date", "title": "startDate"},
+                    {"data": "Salary", "title": "salary"},
+                    {"data": null, "defaultContent": "0", "title": "备注"}
+                ],
+                //汉化
+                language: {
+                    "sLengthMenu": "每页显示 _MENU_ 条记录",
+                    "sZeroRecords": "对不起，查询不到任何相关数据",
+                    "sInfo": "当前显示 _START_ 到 _END_ 条，共 _TOTAL_条记录",
+                    "sInfoEmpty": "找不到相关数据",
+                    "sInfoFiltered": "数据表中共为 _MAX_ 条记录)",
+                    "sProcessing": "正在加载中...",
+                    "sSearch": "搜索",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": " 上一页 ",
+                        "sNext": " 下一页 ",
+                        "sLast": " 末页 "
+                    },
+                    "select": {
+                        "rows": {
+                            _: "选中了 %d 行",
+                            0: "点击一行去选中",
+                            1: "选择了 1 行"
+                        }
+                    }
+                },
+                // 开启滚动条
+                // scrollY: "200px",
+                // scrollCollapse: true,
+                // paging:false,
+                //"scrollX": true,//水平滚动
+                select: true,//选中是否打开
+                //需要同时设置dom和buttons,不然buttons容易把“每页显示X条记录”给覆盖
+                dom: '<lfB<t>ip>',
+                buttons: [
+                    {
+                        text: '<i class="glyphicon glyphicon-copy" title="复制"></i>',
+                        extend: 'copy'
+                    }, {
+                        text: '<i class="glyphicon glyphicon-print" title="打印"></i>',
+                        extend: 'print'
+                    }, {
+                        text: '<i class="glyphicon glyphicon-save-file" title="导出excel"></i>',
+                        extend: 'excel'
+                    }, {
+                        text: '<i class="glyphicon glyphicon-list-alt" title="导出csv"></i>',
+                        extend: 'csv'
+                    }, {
+                        text: '<i class="glyphicon glyphicon-file" title="生成pdf"></i>',
+                        extend: 'pdf'
+                    }
+                    // ,'reload' //和下面的id = reload 一起使用
+                ],
+                // buttons: [
+                //     'copy', 'excel', 'pdf'
+                // ],
+                paging: true,//取消分页
+                paginationType: "full_numbers", //详细分页组，可以支持直接跳转到某页
+                pageLength: "10",//每页多少条数据
+                filter: true,//过滤
+                responsive: true,//自适应
+            }
+        );
+    });
+    // id = reload
+    // $.fn.dataTable.ext.buttons.reload = {
+    //     text: '<i class="glyphicon glyphicon-refresh"></i>',
+    //     action: function ( e, dt, node, config ) {
+    //         console.log("gg");
+    //         dt.ajax.reload();
+    //     }
+    // };
+
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>大批量数据入库系统登陆</title>
+<title>飞鱼数据面板</title>
 <meta name="author" content="DeathGhost" />
 <link rel="stylesheet" type="text/css" href="../static/css/login.css" tppabs="css/style.css" />
 <style>
@@ -12,7 +12,9 @@ canvas{z-index:-1;position:absolute;}
 <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 <link href="../static/css/xcConfirm.css"rel="stylesheet">
 <script src="../static/js/xcConfirm.js"></script>
+    <script src="../static/js/lo_cr.js"></script>
 <script src="../static/js/Particleground.js" tppabs="../static/js/Particleground.js"></script>
+    <script src="https://cdn.bootcss.com/crypto-js/3.1.9-1/crypto-js.min.js"></script>
 <script>
 $(document).ready(function() {
   //粒子背景特效
@@ -26,15 +28,15 @@ $(document).ready(function() {
 <body>
 <dl class="admin_login">
  <dt>
-  <strong id = "titles">大批量数据入库系统登陆</strong>
+  <strong id = "titles">飞鱼数据面板登陆</strong>
   <em>Management Login</em>
  </dt>
-    <form id="form1" action="/login_match" method="POST" >
+    <form id="form1" action="/login_match"  method="POST" >
  <dd class="user_icon">
-  <input type="text" placeholder="账号" name="username" class="login_txtbx"/>
+  <input type="text" placeholder="账号" name="username" class="login_txtbx user_t"/>
  </dd>
  <dd class="pwd_icon">
-  <input type="password" placeholder="密码" name="password" class="login_txtbx"/>
+  <input type="password" placeholder="密码" name="password" class="login_txtbx pwd_t"/>
  </dd>
  <dd>
   <input type="button" value="登陆" id = "sub1" class="submit_btn"/>
@@ -43,12 +45,12 @@ $(document).ready(function() {
   <input type="button" value="注册" id = "reg1" class="submit_register"/>
  </dd>
     </form>
-    <form id="form2" action="/register" method="POST" style="display: none">
+    <form id="form2" action="/register"  method="POST" style="display: none">
  <dd class="user_icon">
-  <input type="text" placeholder="请输入注册账号" id="r_user" name="username" class="login_txtbx"/>
+  <input type="text" placeholder="请输入注册账号" id="r_user" name="username" class="login_txtbx user_r"/>
  </dd>
  <dd class="pwd_icon">
-  <input type="password" placeholder="请输入注册密码" id = 'pas' name="password" class="login_txtbx"/>
+  <input type="password" placeholder="请输入注册密码" id = 'pas' name="password" class="login_txtbx pwd_r"/>
  </dd>
 <dd class="pwd_icon">
   <input type="password" placeholder="请确认密码" id = 'r_pas' class="login_txtbx"/>
@@ -74,6 +76,8 @@ $(document).ready(function() {
               window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
               return;
           };
+          var pwd_e = encryptByDES($('.pwd_t').val());
+          $('.pwd_t').val(pwd_e);
           $('#form1').submit();
    });
    if(htm1=='err'){
@@ -88,7 +92,7 @@ $(document).ready(function() {
    $('#reg2').click(function(){
       $('#form2').hide();
       $('#form1').show();
-      $('#titles').html('大批量数据入库系统登陆');
+      $('#titles').html('飞鱼数据面板登陆');
    });
    $('#sub2').click(function(){
        if (!reg.test($('#r_user').val())){
@@ -104,12 +108,14 @@ $(document).ready(function() {
             window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.error);
             return;
        };
+       var pwd_e = encryptByDES($('.pwd_r').val());
+       $('.pwd_r').val(pwd_e);
        $('#form2').submit();
    });
     if(htm1=='1'){
         $('#form2').hide();
         $('#form1').show();
-        $('#titles').html('大批量数据入库系统登陆');
+        $('#titles').html('飞鱼数据面板登陆');
         var txt=  "注册成功，请登录。";
         window.wxc.xcConfirm(txt, window.wxc.xcConfirm.typeEnum.success);
     };

@@ -20,6 +20,17 @@
     <title>Concept - Bootstrap 4 Admin Dashboard Template</title>
     <style>
         .suojin{text-indent:2%}
+        .table_n{
+            list-style-type:none;
+        }
+        #exampleModal1{
+            margin-top:20%;
+        }
+        .tab_hide{
+            overflow: hidden;
+            display: none;
+            transition: 1s;
+        }
     </style>
     <script>
         $(function () {
@@ -41,65 +52,177 @@
                      }
                  });
              });
-             //获取点击数据库
-             $('.con-link').click(function () {
+
+             // 获取数据库
+             $('.con-link_fei').click(function () {
                  var con = {"con":$(this).text()};
-                 //找到当前点击链接的下层div
                  var jq_tables=$(this).next().find('.s_table');
                  if(jq_tables.children().length==0) {
-                     console.log(con);
                      $.ajax({
                          type: 'post',
-                         url: '/con_db',
+                         url: '/show_tables',
                          data: con,
                          dataType: 'json',
-                         //因为创建cookie的  此处存在问题
-                         success: function (data) {
-
-                         },
-                         //此处因为后端问题返回不了值  所以将代码写在error上
-                         error: function () {
-                             $.ajax({
-                                 type: 'post',
-                                 url: '/show_tables',
-                                 data: '',
-                                 dataType: 'json',
-                                 //因为创建cookie的  此处存在问题
-                                 success: function (res) {
-                                     jq_tables.html('');
-                                     //console.log(res['res_table']);
-                                     var res_table = res['res_table'];
-                                     res_table.forEach(function (item) {
-                                         var li_l = '<li class="nav-item tab-n" id = ' +item+ '><a class="nav-link table_c" href="javascript:;"><i class="fas fa-fw fa-table"></i>' + item + '</a></li>';
-                                         //var li_l = '<a class="nav-item tab-n" href="javascript:;" tab_test = ' +item+ '>' + item + '</a>';
-                                         jq_tables.append(li_l);
-                                         $('.page-aside').css({"overflow": "auto"});
-                                     });
-                                 },
-                                 error: function () {
-
-                                 }
+                         success: function (res) {
+                             jq_tables.html('');
+                             var res_table = res['res_table'];
+                             res_table.forEach(function (item) {
+                                 var li_l = '<li class="tab-n" sid = ' +item+ '><a class="nav-link table_c" href="javascript:;"><i class="fas fa-fw fa-table"></i>' + item + '</a></li>';
+                                 jq_tables.append(li_l);
+                                 $('.page-aside').css({"overflow": "auto"});
                              });
+                         },
+                         error: function () {
+                             alert('error');
                          }
-                     });
+                     })
                  }
              });
-             //双击查询表
-             $('.nav-item').dblclick(function () {
-                 var tab_name = $(this).attr('tab_test');
-                 console.log(tab_name);
+
+             // 获取数据库
+             $('.nav_list').click(function () {
+                 var con = {"con":$(this).text()};
+                 $(this).find('.table_n').toggleClass('tab_hide');
+                 var jq_tables=$(this).find('.table_n');
+                 if(jq_tables.children().length==0) {
+                     $.ajax({
+                         type: 'post',
+                         url: '/show_tables',
+                         data: con,
+                         dataType: 'json',
+                         success: function (res) {
+                             jq_tables.html('');
+                             var res_table = res['res_table'];
+                             res_table.forEach(function (item) {
+                                 var li_l = '<li class="tab-n" sid = ' +item+ '><a class="nav-link table_c" href="javascript:;" data-toggle="modal" data-target="#exampleModal1"><i class="fas fa-fw fa-table"></i>' + item + '</a></li>';
+                                 jq_tables.append(li_l);
+                                 $('.page-aside').css({"overflow": "auto"});
+                             });
+                         },
+                         error: function () {
+                             alert('error');
+                         }
+                     })
+                 }
              });
+
+             //全局变量
+            var t_host = '';
+            var table_id = '';
+            $('body').on("click", '.tab-n',function () {
+                t_host = $(this).parent().parent().attr('t_host');
+                table_id = $(this) .attr("sid");
+                $('.p_name').text(table_id);
+            });
+
+            //普通查询
+            $('.no_table').click(function () {
+                  $('.table_clear').html('');
+                  var sql = 'select * from'+'`'+table_id+'`'.toString();
+                  var datas = {"api":"no_table","t_host":t_host,"sqls":sql};
+                  console.log(datas);
+                  $.ajax({
+                     type:'post',
+                     url:'/sql_manager',
+                     data:datas,
+                     dataType:'json',
+                     success:function (res) {
+                          console.log(res['res_sqldata']);
+                          var res_data = res['res_sqldata'];
+                          //判断返回类型
+                          var res_type = typeof res_data;
+                          console.log(res_type);
+                          if (res_type == 'number'){
+                              $('.table-striped').append('<p>成功执行 '+res_data+' 条！</p>');
+                          }
+                          else if(res_type == 'string'){
+                              $('.table-striped').append('<p>执行错误！ '+res_data+'</p>');
+                          }
+                          else{
+                              var h = '<thead><tr>';
+                              Object.keys(res_data[0]).forEach(function (item) {
+                                  h+='<th>'+item+'</th>';
+                              })
+                              h+='</tr></thead>';
+                              $('.sql_table').append(h);
+
+                              var b = '<tbody>'
+                              res_data.forEach(function (item) {
+                                  var h1 = '<tr>';
+                                  Object.values(item).forEach(function (item) {
+                                      h1+='<td>'+item+'</td>';
+                                  })
+                                  h1+='</tr>';
+                                  b+=h1;
+                              })
+                              b+='</tbody>';
+                              $('.sql_table').append(b);
+                              $('.table thead tr th').css({"color":"white"});
+                              $('.table thead tr th').css({"white-space":"nowrap"});
+                              $('.table thead tr th').css({"background-color":"#3d405c"});
+                          }
+                     },
+                     error:function () {
+                          alert('error');
+                     }
+                  });
+
+            });
+
+            $('.super_tables').click(function () {
+                 var sup_name = {"host":t_host,"name":table_id};
+                 console.log(sup_name);
+                 $.ajax({
+                     method:'post',
+                     url:'/op_to_super',
+                     data:sup_name,
+                     dataType:'json',
+                     success:function (res) {
+                        console.log(res);
+                        if(res){
+                            location.href="/super_table";
+                        }
+                     },
+                     error:function () {
+                        alert('error!')
+                     }
+                 })
+
+            });
+
+             //阻止浏览器默认右击事件
+             /*document.oncontextmenu = function(e){
+                 return false;
+             }
+             $('.tab_nav').mousedown(function (e) {
+                 if(3 == e.which){
+                       var table_id = $(this).attr("class").split(' ')[1];
+                       console.log(table_id);
+
+
+                  }
+             });*/
+
+             //双击查询表
+             /*$('.nav-item').dblclick(function () {
+                 console.log($(this).html());
+                 var tab_name = $(this).attr('sid');
+                 if(tab_name==undefined){return;}
+                 console.log(tab_name);
+             });*/
+
              //ctr+r 组合键事件
             $(document).keydown(function (event) {
                if(event.ctrlCode && event.while == 192){
                    alert(11);
                };
             });
+
              //执行sql语句
              $('.sub_sql').click(function () {
                   $('.table_clear').html('');
                   var sql = window.getSelection().toString();
-                  var sqls = {"sqls":sql};
+                  var sqls = {"api":"sub_sql","sqls":sql};
                   console.log(sqls);
                   $.ajax({
                      type:'post',
@@ -248,7 +371,7 @@
         <!-- ============================================================== -->
         <div class="dashboard-header">
             <nav class="navbar navbar-expand-lg bg-white fixed-top">
-                <a class="navbar-brand" href="/index">大数据分析面板</a>
+                <a class="navbar-brand" href="/index">飞鱼数据面板</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -385,7 +508,7 @@
                                             <a class="nav-link" href="/data_view">可疑人员分布图</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="/transaction">交易流水分析</a>
+                                            <a class="nav-link" href="#">交易流水分析</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -409,6 +532,9 @@
                                         <li class="nav-item">
                                             <a class="nav-link" href="/operation">数据库管理工具</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="/super_table">超级表格</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </li>
@@ -431,141 +557,6 @@
                                         </li>
                                         <li class="nav-item">
                                             <a class="nav-link" href="/">权限开通</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-divider">
-                                Features
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-6" aria-controls="submenu-6"><i class="fas fa-fw fa-file"></i> Pages </a>
-                                <div id="submenu-6" class="collapse submenu" style="">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/blank-page.html">Blank Page</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/blank-page-header.html">Blank Page Header</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/login.html">Login</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/404-page.html">404 page</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/sign-up.html">Sign up Page</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/forgot-password.html">Forgot Password</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/pricing.html">Pricing Tables</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/timeline.html">Timeline</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/calendar.html">Calendar</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/sortable-nestable-lists.html">Sortable/Nestable List</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/widgets.html">Widgets</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/media-object.html">Media Objects</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/cropper-image.html">Cropper</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/color-picker.html">Color Picker</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-7" aria-controls="submenu-7"><i class="fas fa-fw fa-inbox"></i>Apps <span class="badge badge-secondary">New</span></a>
-                                <div id="submenu-7" class="collapse submenu" style="">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/inbox.html">Inbox</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/email-details.html">Email Detail</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/email-compose.html">Email Compose</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/message-chat.html">Message Chat</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-8" aria-controls="submenu-8"><i class="fas fa-fw fa-columns"></i>Icons</a>
-                                <div id="submenu-8" class="collapse submenu" style="">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-fontawesome.html">FontAwesome Icons</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-material.html">Material Icons</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-simple-lineicon.html">Simpleline Icon</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-themify.html">Themify Icon</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-flag.html">Flag Icons</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/icon-weather.html">Weather Icon</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-9" aria-controls="submenu-9"><i class="fas fa-fw fa-map-marker-alt"></i>Maps</a>
-                                <div id="submenu-9" class="collapse submenu" style="">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/map-google.html">Google Maps</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="pages/map-vector.html">Vector Maps</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-10" aria-controls="submenu-10"><i class="fas fa-f fa-folder"></i>Menu Level</a>
-                                <div id="submenu-10" class="collapse submenu" style="">
-                                    <ul class="nav flex-column">
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Level 1</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-11" aria-controls="submenu-11">Level 2</a>
-                                            <div id="submenu-11" class="collapse submenu" style="">
-                                                <ul class="nav flex-column">
-                                                    <li class="nav-item">
-                                                        <a class="nav-link" href="#">Level 1</a>
-                                                    </li>
-                                                    <li class="nav-item">
-                                                        <a class="nav-link" href="#">Level 2</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="#">Level 3</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -604,6 +595,32 @@
         <!-- ============================================================== -->
         <!-- wrapper  -->
         <!-- ============================================================== -->
+         <!-- ============================================================== -->
+        <!--操作框-->
+        <div class="card-body">
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">数据表操作</h5>
+                            <a href="#" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </a>
+                        </div>
+                        <div class="modal-body">
+                            <p class="p_name">请确认表操作</p>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-secondary" data-dismiss="modal">关闭</a>
+                            <a href="#" class="btn btn-warning no_table" data-dismiss="modal">普通查看</a>
+                            <a href="#" class="btn btn-info super_tables" data-dismiss="modal">超级表查询</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </div>
+        <!-- ============================================================== -->
         <div class="dashboard-wrapper">
             <div class="container-fluid">
                 <aside class="page-aside">
@@ -616,10 +633,10 @@
                         <div class="aside-nav collapse">
                             <ul class="nav">
                                 {% for list in con_list1 %}
-                                    <li class="nav-item">
-                                        <a class="nav-link con-link utf8_test" host = "{{ list.con }}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#{{ list.ID }}" aria-controls="{{ list.ID }}"><i class="fas fa-fw fa-database"></i> {{ list.con }}</a>
-                                        <div id="{{ list.ID }}" class="collapse submenu" style="">
-                                            <ul class="nav flex-column s_table">
+                                    <li class="nav_list">
+                                        <a class="a_link" host = "{{ list.con }}" href="javascript:;"><i class="fas fa-fw fa-database"></i>{{ list.con }}</a>
+                                        <div class="ul_li" t_host = "{{ list.con }}">
+                                            <ul class="table_n tab_hide">
 
                                             </ul>
                                         </div>
@@ -644,8 +661,8 @@
 							</select>
                             <br>
                             <a href="#" class="btn btn-rounded btn-primary" data-toggle="modal" data-target="#exampleModal_combine">整合表</a>
-                            <a href="#" class="btn btn-rounded btn-success combine_field">整合字段</a>
-                            <a href="#" class="btn btn-rounded btn-secondary field-list" data-toggle="modal" data-target="#exampleModal_fenxi">数据分析</a>
+                            <a href="#" class="btn btn-rounded btn-success combine_field" style="display: none">整合字段</a>
+                            <a href="#" class="btn btn-rounded btn-secondary field-list" data-toggle="modal" data-target="#exampleModal_fenxi" style="display: none">数据分析</a>
                             <!-- Modal -->
                             <div class="modal fade" id="exampleModal_combine" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog" role="document">

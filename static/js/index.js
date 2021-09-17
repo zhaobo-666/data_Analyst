@@ -1,4 +1,15 @@
 $(function () {
+       //去除特殊字符函数
+        String.prototype.rep_str=function(){
+          //[]内输入你要过滤的字符，这里是我的
+          let pattern=new RegExp("[`~%!@#^\"=''?~《》！@#￥……&——‘”“'？*()（），,。.、<>]");
+          let rs="";
+          for(let i=0;i<this.length;i++){
+              rs+=this.substr(i,1).replace(pattern,'');
+          }
+          return rs;
+        }
+
        //退出
        $('#login_out').click(function () {
            location.href="/signout";

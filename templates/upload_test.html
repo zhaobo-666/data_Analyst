@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Hello, Bootstrap Table!</title>
+      <script src="../static/js/jquery.js"></script>
+      <script src="../static/js/xlsx.full.min.js"></script>
+  </head>
+  <body>
+   <button class="btn btn-primary btn-blue" onclick="selectFile();">上 传</button>
+   <input type="file" id="file"  style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;"/>
+   <script>
+        /*** 导入 ***/
+        function selectFile(){
+            //触发 文件选择的click事件
+                $("#file").trigger("click");
+            }
+        $('#file').change(function(e) {
+             $("#myDiv").show();
+             var files = e.target.files;
+             var fileReader = new FileReader();
+             fileReader.onload = function(ev) {
+                 try {
+                     var data = ev.target.result,
+                         workbook = XLSX.read(data, {
+                             type: 'binary'
+                         }), // 以二进制流方式读取得到整份excel表格对象
+                         persons = []; // 存储获取到的数据
+                 } catch (e) {
+                     console.log('文件类型不正确');
+                     return;
+                 }
+
+                 // 表格的表格范围，可用于判断表头是否数量是否正确
+                 var fromTo = '';
+                 // 遍历每张表读取
+                 for (var sheet in workbook.Sheets) {
+                     if (workbook.Sheets.hasOwnProperty(sheet)) {
+                         fromTo = workbook.Sheets[sheet]['!ref'];
+                         persons = persons.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                          break; // 如果只取第一张表，就取消注释这行
+                     }
+                 }
+                 //var str="";
+                 var new_arry = []
+                 for(var i=0;i<persons.length;i++){
+                     if(i==persons.length-1){
+                         //str+=JSON.stringify(persons[i]);
+                         new_arry.push(persons[i])
+                     }else{
+                         //console.log(persons[i]);
+                         new_arry.push(persons[i])
+                         //str+=JSON.stringify(persons[i])+"*"
+                     }
+                 }
+                 console.log(new_arry);
+
+
+                   /* $.ajax({
+                        url:"${appPath}/eco/using/fusi0010_importData.st",
+                        data:{"persons":str},
+                        dataType:"json",
+                        type:"post",
+                        success:function(data){
+                            var 错误数据集合=data.errorDataList;
+                            var 错误条数=错误数据集合.length;
+                            var 成功条数=data.successData;
+                            var 总条数=data.totalData;
+                            var 重复条数=data.duplicateData;
+                            var str='';
+                            str+='<tr  style="height:30px;line-height:30px; border-bottom-color: #fff;" >'
+                                +'<td colspan="4" style="border-bottom-color: #fff !important;border-top-color: #fff !important;" class="td">数据上传情况：</td>'
+                                +'</tr>'
+                                +'<tr style="height:30px;line-height:30px;">'
+                                +'<td colspan="4" class="td">'
+                                +'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                                +'共导入 <span class="span">'+总条数+'</span> 条数据，上传成功 <span class="span">'+成功条数+'</span> 条， <span class="span">'+重复条数+'</span> 条重复数据， <span class="span">'+错误条数+'</span> 条导入错误数据，以下展示错误数据详情：'
+                                +'</td>'
+                                +'</tr>';
+                                if(错误条数==0){
+                                 str+='<tr style="font-weight:bold;height:30px;"><td style="width:20%;text-align: center;" class="td">序号</td><td style="width:20%;text-align: center;" class="td">汇总月份</td><td style="width:20%;text-align: center;" class="td">企业名称</td><td style="width:20%;text-align: center;" class="td">导入错误描述</td></tr>'
+                                     +'<tr style="height:30px;line-height:30px;text-align: center; color: red;"><td colspan="4" class="td">无错误数据！</td></tr>'
+                                }
+                                if(错误数据集合.length>0){
+                                    str+='<tr style="font-weight:bold;height:30px;"><td style="width:20%;text-align: center;" class="td">序号</td><td style="width:20%;text-align: center;" class="td">汇总月份</td><td style="width:20%;text-align: center;" class="td">企业名称</td><td style="width:20%;text-align: center;" class="td">导入错误描述</td></tr>';
+                                    for(var i=0;i<错误数据集合.length;i++){
+                                        str+='<tr style="height:30px;"><td style="width:20%;text-align: center;" class="td">'+错误数据集合[i].序号+'</td><td style="width:20%;text-align: center;" class="td">'+错误数据集合[i].汇总月份+'</td><td style="width:20%;text-align: center;" class="td">'+错误数据集合[i].企业名称+'</td><td style="width:20%;text-align: center;" class="td">'+错误数据集合[i].导入错误描述+'</td></tr>';
+                                    }
+                                }
+                                $("#mytbody").html(str)
+                                $("#myDiv").hide();
+                        }
+                    });*/
+
+             };
+             // 以二进制方式打开文件
+             fileReader.readAsBinaryString(files[0]);
+            //获取文件名称展示在页面上
+            var fliePath=$("#file").val();
+            var arr=fliePath.lastIndexOf("\\");
+            fliePath=fliePath.substring(arr+1,fliePath.length);
+            $("#fileName").text(fliePath);
+
+         });
+
+   </script>
+
+
+  </body>
+</html>
