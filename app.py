@@ -16,6 +16,7 @@ app = Flask(__name__)
 # 限制域名访问
 cors = CORS(app, resources={r"/.*": {"origins": ["http://8.141.50.171:9090", "http://172.16.2.190:9090", "http://127.0.0.1:5000"]}})
 
+<<<<<<< HEAD
 # 系统库连接
 host = "8.141.50.171"
 port = 3306
@@ -40,6 +41,14 @@ def login_required(func):
         else:
             return func(*args, **kwargs)
     return inner
+=======
+#系统库连接
+host = "127.0.0.1"
+port = 3306
+user = "root"
+pwd = "*******"
+db = "sqlup"
+>>>>>>> 3be6d407a129368bf466271dc5e32ab5c3fce10d
 
 
 # 过滤特殊字符
