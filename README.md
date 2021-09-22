@@ -5,7 +5,6 @@
 Github：@NiRongxu
 QQ: 2693716410
 email: 2693716410@qq.com
-
 # 实现功能
 1.批量导入excel csv 数据进入mysql 数据库。
 2.文件检索，可以上传单个excel 或者csv文件，也可以将多个csv或者excel打成一个压缩包zip 进行上传。rar目前还在开发。
@@ -23,3 +22,4 @@ email: 2693716410@qq.com
 ![image](https://user-images.githubusercontent.com/67621434/134265575-6d8b902c-c4e0-47ba-b4de-51c5634ae770.png)
 5.
 ![image](https://user-images.githubusercontent.com/67621434/134265731-87394037-54d9-49c0-ad14-e9ae89366638.png)
+# 演示地址 http://8.141.50.171:9090
