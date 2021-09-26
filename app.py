@@ -278,7 +278,7 @@ def super_table():
 
         cursor_user = con_sql_user(user_id, t_host)
 
-        sql_table_data = "select * from `%s`" % t_name
+        sql_table_data = "select * from `%s` limit 10" % t_name
         table_data = function.conn_fetchall(sql_table_data, cursor_user)
 
         cursor_user.close()
