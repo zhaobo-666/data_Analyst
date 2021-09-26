@@ -230,6 +230,7 @@ class Excel(object):
             sheets = pd.read_excel(f, sheet_name=None, keep_default_na=False)
             for sheet in sheets.keys():
                 excel_sheet_data = pd.read_excel(self.file_path, sheet_name=sheet, keep_default_na=False)
+
                 print('行数是', excel_sheet_data.shape[0])
                 column_field = ''
                 # 读取excel获取每个表的列名
@@ -246,7 +247,8 @@ class Excel(object):
                 for index, row in excel_sheet_data.iterrows():
                     in_val_field = ""
                     for column in excel_sheet_data:
-                        in_val_field = in_val_field + "'" + str(row[column]) + "',"
+                        # in_val_field = [x.replace("'", '').replace('"', '') for x in column]
+                        in_val_field = in_val_field + "'" + str(row[column]).replace("'", '').replace('"', '') + "',"
                     in_val_field = in_val_field[:-1]
                     in_val_field = in_val_field.replace('(', '（')
                     in_val_field = in_val_field.replace(')', '）')
@@ -312,7 +314,7 @@ def gb18030(filename, tablename, cursor_user):
 
     table_da = ''
     for row in file:
-        table_data = row
+        table_data = [x.replace("'", '').replace('"', '') for x in row]
         table_data = str(table_data)
         table_data = table_data.replace('(', '（')
         table_data = table_data.replace(')', '）')
@@ -414,6 +416,9 @@ def utf8_csv(filename, tablename, cursor_user):
     encode_info = get_encode_info(file_name)
     # 恶心的编码
 
+    # 替换数据
+
+
     file = csv.reader(open(filename, 'r', encoding='utf-8', errors='ignore'))
     cols = next(file)
     column = ''
@@ -439,7 +444,8 @@ def utf8_csv(filename, tablename, cursor_user):
 
     table_da = ''
     for row in file:
-        table_data = row
+        # table_data = row
+        table_data = [x.replace("'", '').replace('"', '') for x in row]
         table_data = str(table_data)
         table_data = table_data.replace('(', '（')
         table_data = table_data.replace(')', '）')
@@ -450,7 +456,8 @@ def utf8_csv(filename, tablename, cursor_user):
         table_data = '(' + table_data + ')' + ','
 
         table_da = table_da + table_data
-    # print(table_da)
+    print(table_da)
+    # test = input('test:')
     table_da = table_da[0:-1]
     if table_da.count(')') == 0:
         return create_res
@@ -476,6 +483,8 @@ def utf8_csv(filename, tablename, cursor_user):
             insert_sql = "insert  into " + ' ' + '`' + tablename + '`' + ' ' + '(' + columns + '`' + '路径' + '`' + ')' + 'values' + st + ';'
             # insert_sql = 'insert  into `%s` (%s `路径`)values %s;' %(tablename,columns,st)
             print(insert_sql)
+            with open('test.txt', 'w+', encoding='utf8') as f:
+                f.write(insert_sql)
             conn_exec(insert_sql, cursor_user)
     else:
         insert_sql = "insert  into " + ' ' + '`' + tablename + '`' + ' ' + '(' + columns + '`' + '路径' + '`' + ')' + 'values' + table_da + ';'
